@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class LevelGeneratorScript : MonoBehaviour
 {
+    public float MapScale = 4.0f;
     public int MapSize = 3;
     public int TileSize = 10;
     public RoadElementScript RoadElementGameObject;
@@ -14,6 +15,9 @@ public class LevelGeneratorScript : MonoBehaviour
     {
         // in-game instantiation
         GenerateMap();
+
+        // scale up
+        transform.localScale = new Vector3(MapScale, MapScale, MapScale);
     }
 
     public void GenerateMap()
@@ -109,6 +113,7 @@ public class LevelGeneratorScript : MonoBehaviour
 
         Vector3 tilePositionVector3 = new Vector3((float)mapX * size, 0.0f, (float)mapY * size);
         result = Instantiate(RoadElementGameObject);
+        result.transform.parent = transform;
         result.transform.position = tilePositionVector3;
 
         MapGraph[mapPosition] = result;
