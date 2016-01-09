@@ -7,6 +7,10 @@ public class LevelGeneratorScript : MonoBehaviour
     public int MapSize = 3;
     public int TileSize = 10;
     public RoadElementScript RoadElementGameObject;
+    public bool DrawGizmos = false;
+
+    [Range(0.0f, 1.0f)]
+    public float GizmoAlpha = 0.2f;
 
     Dictionary<Vector2, RoadElementScript> MapGraph = new Dictionary<Vector2, RoadElementScript>();
     LinkedList<RoadElementScript> MapList = new LinkedList<RoadElementScript>();
@@ -17,18 +21,12 @@ public class LevelGeneratorScript : MonoBehaviour
         GenerateMap();
 
         // scale up
-        transform.localScale = new Vector3(MapScale, MapScale, MapScale);
+        transform.localScale = new Vector3(MapScale, 1.0f, MapScale);
     }
 
     public void GenerateMap()
     {
-        foreach (var element in MapList)
-        {
-            DestroyImmediate(element.gameObject);
-        }
-
-        MapList.Clear();
-        MapGraph.Clear();
+        ClearMap();
 
         for (int i = 0; i < MapSize; ++i)
         {
@@ -51,6 +49,17 @@ public class LevelGeneratorScript : MonoBehaviour
         }
 
         UpdateRoadElements(MapList);
+    }
+
+    void ClearMap()
+    {
+        foreach (var element in MapList)
+        {
+            DestroyImmediate(element.gameObject);
+        }
+
+        MapList.Clear();
+        MapGraph.Clear();
     }
 
     void GenerateAt(int mapX, int mapY, int size)
@@ -111,13 +120,44 @@ public class LevelGeneratorScript : MonoBehaviour
 
         Vector2 mapPosition = new Vector2((float)mapX, (float)mapY);
 
-        Vector3 tilePositionVector3 = new Vector3((float)mapX * size, 0.0f, (float)mapY * size);
+        Vector3 tilePositionVector3 = new Vector3((float)mapX * size, -1.0f, (float)mapY * size);
         result = Instantiate(RoadElementGameObject);
-        result.transform.parent = transform;
         result.transform.position = tilePositionVector3;
+        result.transform.parent = transform;
 
         MapGraph[mapPosition] = result;
 
         return result;
+    }
+
+    void OnDrawGizmos()
+    {
+        if (DrawGizmos == true)
+        {
+            if (MapList.Count > 0)
+            {
+                foreach (RoadElementScript element in MapList)
+                {
+                    Vector3 pos = element.transform.position;
+                    Color gizmoColor = Color.blue;
+
+                    Vector3 difference = element.Next.transform.position - element.Previous.transform.position;
+                    Vector3 forwardVector3 = element.transform.position - element.Previous.transform.position;
+
+                    float angle = Vector3.Angle(difference, forwardVector3);
+                    if (Mathf.Abs(angle) > 0.0f)
+                    {
+                        gizmoColor = Color.green;
+                    }
+                    gizmoColor.a = GizmoAlpha;
+
+                    Gizmos.color = gizmoColor;
+
+                    Vector3 size = new Vector3(TileSize, TileSize, TileSize);
+                    size *= 4;
+                    Gizmos.DrawCube(pos, size);
+                }
+            }
+        }
     }
 }

@@ -68,9 +68,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Script\EditorLevelGeneratorScript.cs" />
     <Compile Include="Assets\Script\LerpDemo.cs" />
-    <Compile Include="Assets\Script\LevelGeneratorScript.cs" />
+    <Compile Include="Assets\Script\Level Generator\LevelGeneratorCaveScript.cs" />
+    <Compile Include="Assets\Script\Level Generator\LevelGeneratorScript.cs" />
+    <Compile Include="Assets\Script\Level Generator\MeshGeneratorScript.cs" />
     <Compile Include="Assets\Script\NewBehaviourScript.cs" />
     <Compile Include="Assets\Script\RoadElementScript.cs" />
   </ItemGroup>
