@@ -7,6 +7,7 @@ public class RoadElementScript : MonoBehaviour
     public GameObject CurvePrefab;
     public RoadElementScript Previous;
     public RoadElementScript Next;
+    public bool IsCurve = false;
 
     public void UpdateShape()
     {
@@ -30,6 +31,8 @@ public class RoadElementScript : MonoBehaviour
 
             Vector3 directionVector3 = next.transform.position - transform.position;
             shape.transform.forward = directionVector3;
+
+            IsCurve = true;
         }
         else
         {
@@ -38,6 +41,8 @@ public class RoadElementScript : MonoBehaviour
             shape.transform.position = transform.position;
             shape.transform.parent = transform;
             shape.transform.rotation = transform.rotation;
+
+            IsCurve = false;
         }
     }
 }

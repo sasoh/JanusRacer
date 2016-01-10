@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class LevelGeneratorScript : MonoBehaviour
 {
+    public Text MapPrint;
     public float MapScale = 4.0f;
     public int MapSize = 3;
     public int TileSize = 10;
@@ -12,11 +14,15 @@ public class LevelGeneratorScript : MonoBehaviour
     [Range(0.0f, 1.0f)]
     public float GizmoAlpha = 0.2f;
 
-    Dictionary<Vector2, RoadElementScript> MapGraph = new Dictionary<Vector2, RoadElementScript>();
+    int[,] Map;
+    
     LinkedList<RoadElementScript> MapList = new LinkedList<RoadElementScript>();
+    Dictionary<Vector2, RoadElementScript> MapElements = new Dictionary<Vector2, RoadElementScript>();
 
     void Start()
     {
+        Map = new int[MapSize, MapSize];
+
         // in-game instantiation
         GenerateMap();
 
@@ -28,27 +34,28 @@ public class LevelGeneratorScript : MonoBehaviour
     {
         ClearMap();
 
+        Map = LevelGeneratorHelper.GetRekt(MapSize, MapSize);
+        
         for (int i = 0; i < MapSize; ++i)
         {
-            GenerateAt(i, 0, TileSize);
+            for (int j = 0; j < MapSize; ++j)
+            {
+                if (Map[i, j] == 1)
+                {
+                    GenerateAt(i, j, TileSize);
+                }
+            }
         }
 
-        for (int i = 0; i < MapSize; ++i)
+        List<Vector2> path = LevelGeneratorHelper.GetPathInMap(Map);
+        foreach (Vector2 node in path)
         {
-            GenerateAt(MapSize - 1, i, TileSize);
+            MapList.AddLast(MapElements[node]);
         }
 
-        for (int i = MapSize - 1; i >= 0; --i)
-        {
-            GenerateAt(i, MapSize - 1, TileSize);
-        }
+        LevelGeneratorHelper.PrintMap(Map, MapSize, MapSize, MapPrint);
 
-        for (int i = MapSize - 1; i >= 0; --i)
-        {
-            GenerateAt(0, i, TileSize);
-        }
-
-        UpdateRoadElements(MapList);
+        SetupRoadElementsLinks(MapList);
     }
 
     void ClearMap()
@@ -59,29 +66,35 @@ public class LevelGeneratorScript : MonoBehaviour
         }
 
         MapList.Clear();
-        MapGraph.Clear();
+        MapElements.Clear();
+
+        for (int i = 0; i < MapSize; ++i)
+        {
+            for (int j = 0; j < MapSize; ++j)
+            {
+                Map[i, j] = 0;
+            }
+        }
     }
 
     void GenerateAt(int mapX, int mapY, int size)
     {
-        if (ContainsObjectAtPosition(mapX, mapY) == false)
+        if (IsRoad(mapX, mapY) == true)
         {
-            RoadElementScript element = GenerateRoadElement(mapX, mapY, size);
-            MapList.AddFirst(element);
+            GenerateRoadElement(mapX, mapY, size);
         }
     }
 
-    bool ContainsObjectAtPosition(int mapX, int mapY)
+    bool IsRoad(int mapX, int mapY)
     {
         bool result = false;
-
-        Vector2 mapPosition = new Vector2((float)mapX, (float)mapY);
-        result = MapGraph.ContainsKey(mapPosition);
+        
+        result = (Map[mapX, mapY] == 1);
 
         return result;
     }
 
-    void UpdateRoadElements(LinkedList<RoadElementScript> list)
+    void SetupRoadElementsLinks(LinkedList<RoadElementScript> list)
     {
         LinkedListNode<RoadElementScript> iter = null;
         for (iter = list.First; iter != null; iter = iter.Next)
@@ -124,8 +137,9 @@ public class LevelGeneratorScript : MonoBehaviour
         result = Instantiate(RoadElementGameObject);
         result.transform.position = tilePositionVector3;
         result.transform.parent = transform;
-
-        MapGraph[mapPosition] = result;
+        
+        Map[mapX, mapY] = 1;
+        MapElements[mapPosition] = result;
 
         return result;
     }
